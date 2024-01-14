@@ -10,7 +10,7 @@ import io.github.jan.supabase.postgrest.from
 
 
 class Stripe(private val userId: String) {
-    var accountId: String? = null
+    private var accountId: String? = null
     suspend fun createStripeAccount() {
         val params =
             AccountCreateParams.builder().setType(AccountCreateParams.Type.EXPRESS).build()

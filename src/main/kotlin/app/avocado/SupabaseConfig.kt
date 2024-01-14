@@ -20,6 +20,7 @@ object SupabaseConfig {
             install(Postgrest) {}
             install(Auth) {
                 alwaysAutoRefresh = false
+                autoLoadFromStorage = false
             }
         }
     }

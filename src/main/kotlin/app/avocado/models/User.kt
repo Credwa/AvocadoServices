@@ -9,7 +9,7 @@ import kotlinx.serialization.encoding.Encoder
 data class User(val id: String, @SerialName("avatar_url") val avatarUrl: String?, val role: UserRole)
 
 @Serializable
-data class UserId(val id: String)
+data class UserId(val uid: String)
 
 @Serializable
 data class UserExistsResponse(val exists: Boolean)

@@ -40,7 +40,7 @@ fun Route.userRouting() {
                     if (artist.isEmpty()) {
                         supabase.from("users").insert(
                             User(
-                                userRequestBody.id,
+                                userRequestBody.uid,
                                 defaultAvatarUrl,
                                 UserRole.USER
                             )
@@ -48,7 +48,7 @@ fun Route.userRouting() {
                     } else {
                         supabase.from("users").insert(
                             User(
-                                userRequestBody.id,
+                                userRequestBody.uid,
                                 artist[0].avatarUrl,
                                 UserRole.ARTIST
                             )

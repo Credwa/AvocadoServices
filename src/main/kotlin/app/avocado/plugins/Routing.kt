@@ -1,5 +1,6 @@
 package app.avocado.plugins
 
+import app.avocado.routes.artistRouting
 import app.avocado.routes.campaignRouting
 import app.avocado.routes.userRouting
 import io.ktor.server.application.*
@@ -10,5 +11,6 @@ fun Application.configureRouting() {
     routing {
         userRouting()
         campaignRouting()
+        artistRouting()
     }
 }

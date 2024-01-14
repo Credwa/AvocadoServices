@@ -5,12 +5,15 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserSession
 import io.ktor.server.application.*
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
 
 
 class BadRequestException(message: String) : RuntimeException(message)
 
 const val baseUrl = "api/v1"
 
+@Serializable
+data class PostSuccessResponse(val message: String = "", val status: Int = 201)
 
 suspend fun ApplicationCall.setUserSession() {
     val bearerToken = this.request.headers["Authorization"]
@@ -40,6 +43,7 @@ suspend fun ApplicationCall.setUserSession() {
                 user = null
             )
         )
-
+        // don't refresh session on backend. We handle refreshes on frontend.
+        supabase.auth.stopAutoRefreshForCurrentSession()
     }
 }
