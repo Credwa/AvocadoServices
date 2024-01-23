@@ -11,6 +11,10 @@ data class User(val id: String, @SerialName("avatar_url") val avatarUrl: String?
 @Serializable
 data class UserId(val uid: String)
 
+
+@Serializable
+data class AvatarUpload(val id: String, val imageBase64: String)
+
 @Serializable
 data class UserExistsResponse(val exists: Boolean)
 

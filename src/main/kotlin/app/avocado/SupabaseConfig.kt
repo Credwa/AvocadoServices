@@ -6,6 +6,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.serializer.KotlinXSerializer
+import io.github.jan.supabase.storage.Storage
 import kotlinx.serialization.json.Json
 
 object SupabaseConfig {
@@ -22,6 +23,7 @@ object SupabaseConfig {
                 alwaysAutoRefresh = false
                 autoLoadFromStorage = false
             }
+            install(Storage) {}
         }
     }
 
@@ -34,6 +36,7 @@ object SupabaseConfig {
                 ignoreUnknownKeys = true //apply your custom config
             })
             install(Postgrest) {}
+            install(Storage) {}
         }
     }
 }

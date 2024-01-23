@@ -1,7 +1,6 @@
 package app.avocado.routes
 
 import app.avocado.SupabaseConfig.supabase
-import app.avocado.SupabaseConfig.supabaseAdmin
 import app.avocado.models.*
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
@@ -99,8 +98,9 @@ fun Route.campaignRouting() {
                 shares
             """.trimIndent().lines().joinToString("")
             )
+            call.setUserSession()
 
-            val purchaseInfo = supabaseAdmin.from("song_purchases").select(columns = columns) {
+            val purchaseInfo = supabase.from("song_purchases").select(columns = columns) {
                 filter {
                     PurchaseInfo::songId eq songId
                     and {

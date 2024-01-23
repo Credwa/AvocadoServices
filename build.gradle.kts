@@ -6,9 +6,8 @@ plugins {
     kotlin("jvm") version "1.9.21"
     id("io.ktor.plugin") version "2.3.7"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
+
 }
-
-
 
 group = "app.avocado"
 version = "0.0.1"
@@ -25,6 +24,21 @@ repositories {
     mavenCentral()
 }
 
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_17)
+        localImageName.set("avocado-services-image")
+        imageTag.set("0.0.1")
+    }
+}
+
+tasks {
+    register("fatJar", Jar::class.java) {
+        archiveClassifier.set("all")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
 dependencies {
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("com.stripe:stripe-java:24.0.0")
@@ -35,9 +49,9 @@ dependencies {
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.0")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-client-okhttp:2.2.1")
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.0.0")
-    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.0.0")
-
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.0.4")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.0.4")
+    implementation("io.github.jan-tennert.supabase:storage-kt:2.0.4")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

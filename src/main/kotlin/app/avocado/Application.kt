@@ -10,14 +10,19 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
 fun main() {
+    println(dotenv().get("HOST"))
     Stripe.apiKey =
         dotenv().get("STRIPE_API_KEY")
-    embeddedServer(Netty, port = 8080, host = "192.168.1.23", module = Application::module)
+    embeddedServer(
+        Netty,
+        port = (System.getenv("PORT") ?: "8080").toInt(),
+        host = dotenv().get("HOST") ?: "0.0.0.0",
+        module = Application::module
+    )
         .start(wait = true)
 }
 
 fun Application.module() {
-
     configureSerialization()
     configureHTTP()
     configureRouting()
