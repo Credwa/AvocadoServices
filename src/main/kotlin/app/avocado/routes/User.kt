@@ -7,7 +7,6 @@ import app.avocado.utils.BadRequestException
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
 import app.avocado.utils.setUserSession
-import io.github.cdimascio.dotenv.dotenv
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.*
@@ -47,7 +46,7 @@ fun Route.userRouting() {
                 bucket.upload("${data.id}/${myUuidAsString}.jpeg", imageData, upsert = true)
                 supabaseAdmin.from("users").update(
                     {
-                        User::avatarUrl setTo "${dotenv().get("SUPABASE_URL")}/storage/v1/object/public/profilephotos/${data.id}/${myUuidAsString}.jpeg"
+                        User::avatarUrl setTo "${System.getenv("SUPABASE_URL")}/storage/v1/object/public/profilephotos/${data.id}/${myUuidAsString}.jpeg"
                     }
                 ) {
                     filter {

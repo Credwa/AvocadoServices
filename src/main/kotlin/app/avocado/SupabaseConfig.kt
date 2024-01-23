@@ -1,6 +1,5 @@
 package app.avocado
 
-import io.github.cdimascio.dotenv.dotenv
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
@@ -12,8 +11,8 @@ import kotlinx.serialization.json.Json
 object SupabaseConfig {
     val supabase: SupabaseClient by lazy {
         createSupabaseClient(
-            dotenv().get("SUPABASE_URL"),
-            dotenv().get("SUPABASE_ANON_KEY")
+            System.getenv("SUPABASE_URL"),
+            System.getenv("SUPABASE_ANON_KEY")
         ) {
             defaultSerializer = KotlinXSerializer(Json {
                 ignoreUnknownKeys = true //apply your custom config
@@ -29,8 +28,8 @@ object SupabaseConfig {
 
     val supabaseAdmin: SupabaseClient by lazy {
         createSupabaseClient(
-            dotenv().get("SUPABASE_URL"),
-            dotenv().get("SUPABASE_SERVICE_ROLE_KEY")
+            System.getenv("SUPABASE_URL"),
+            System.getenv("SUPABASE_SERVICE_ROLE_KEY")
         ) {
             defaultSerializer = KotlinXSerializer(Json {
                 ignoreUnknownKeys = true //apply your custom config
