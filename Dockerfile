@@ -1,7 +1,7 @@
 FROM gradle:7-jdk11 AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN gradle buildFatJar --no-daemon
+RUN gradle buildFatJar
 
 FROM openjdk:11-jdk-slim
 WORKDIR /src
