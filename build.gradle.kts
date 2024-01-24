@@ -32,11 +32,18 @@ ktor {
     }
 }
 
-tasks {
-    register("fatJar", Jar::class.java) {
-        archiveClassifier.set("all")
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+val mainClassName = "app.avocado.ApplicationKt"
+
+tasks.register<Jar>("fatJar") {
+    manifest {
+        attributes("Main-Class" to mainClassName)
     }
+    from({
+        configurations.runtimeClasspath.get().map {
+            if (it.isDirectory) it else zipTree(it)
+        }
+    })
+    with(tasks.named<Jar>("jar").get())
 }
 
 dependencies {
@@ -46,7 +53,6 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("io.ktor:ktor-server-cors-jvm")
-    implementation("io.github.cdimascio:dotenv-kotlin:6.4.0")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-client-okhttp:2.2.1")
     implementation("io.github.jan-tennert.supabase:postgrest-kt:2.0.4")
