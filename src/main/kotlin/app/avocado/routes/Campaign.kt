@@ -1,6 +1,7 @@
 package app.avocado.routes
 
 import app.avocado.SupabaseConfig.supabase
+import app.avocado.SupabaseConfig.supabaseAdmin
 import app.avocado.models.*
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
@@ -15,6 +16,8 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 fun Route.campaignRouting() {
     route("${baseUrl}/search") {
@@ -114,6 +117,53 @@ fun Route.campaignRouting() {
         }
     }
     route("$baseUrl/campaigns") {
+        get("discover") {
+            val limit = call.parameters["limit"]?.toLongOrNull() ?: 8 // Default limit
+            val offset = call.parameters["offset"]?.toIntOrNull() ?: 0 // Default offset
+
+            val rangeFrom = (offset * limit)
+            val rangeTo = (offset * limit) + limit - 1
+
+            val columns = Columns.raw(
+                """
+            id,
+            song_title,
+            song_description,
+            song_lyrics,
+            artwork_url,
+            audio_url,
+            primary_genre,
+            secondary_genre,
+            add_version_info,
+            is_radio_edit,
+            add_version_info_other,
+            explicit_lyrics,
+            status,
+            duration,
+            campaign_details (
+              available_shares,
+              price_per_share,
+              campaign_start_date,
+              time_restraint
+            ),
+            artists (
+              id,
+              artist_name,
+              avatar_url,
+              is_verified
+            )
+            """.trimIndent().lines().joinToString("")
+            )
+            val campaigns = supabaseAdmin.from("songs").select(columns = columns) {
+                filter {
+                    Campaign::status neq "draft"
+                }
+                order(column = "last_updated_at", order = Order.DESCENDING)
+                range(rangeFrom, rangeTo)
+            }.decodeList<Campaign>()
+
+            call.respond(campaigns)
+        }
         get("{id?}") {
             val songId = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id",
@@ -158,6 +208,19 @@ fun Route.campaignRouting() {
 
             call.respond(campaign)
         }
+        post("play/{id?}") {
+            val songId = call.parameters["id"] ?: return@post call.respondText(
+                "Missing id",
+                status = HttpStatusCode.BadRequest
+            )
 
+            @Serializable
+            data class IncrementPlays(
+                @SerialName("song_id") val songId: String
+            )
+
+            supabaseAdmin.postgrest.rpc("increment_song_plays", IncrementPlays(songId))
+            call.respond(PostSuccessResponse("$songId play incremented"))
+        }
     }
 }

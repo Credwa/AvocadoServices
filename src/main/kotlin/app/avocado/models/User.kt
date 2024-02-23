@@ -4,19 +4,29 @@ import kotlinx.serialization.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+@Serializable
+data class NotificationPreferences(@SerialName("notifications_enabled") val notificationsEnabled: Boolean)
 
 @Serializable
-data class User(val id: String, @SerialName("avatar_url") val avatarUrl: String?, val role: UserRole)
+data class User(
+    val id: String,
+    @SerialName("avatar_url") val avatarUrl: String?,
+    val role: UserRole,
+    @SerialName("notification_preferences") val notificationPreferences: NotificationPreferences?,
+    @SerialName("is_onboarded") val isOnboarded: Boolean?,
+    @SerialName("stripe_onboarding_complete") val stripeOnboarded: Boolean?
+)
 
 @Serializable
 data class UserId(val uid: String)
 
 
 @Serializable
-data class AvatarUpload(val id: String, val imageBase64: String)
+data class AvatarUpload(val id: String, val imageBase64: String, val currentAvatar: String?)
 
 @Serializable
 data class UserExistsResponse(val exists: Boolean)
+
 
 @Serializable(with = UserRoleSerializer::class)
 enum class UserRole {

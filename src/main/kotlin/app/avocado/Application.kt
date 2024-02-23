@@ -11,6 +11,7 @@ import io.ktor.server.netty.*
 fun main() {
     Stripe.apiKey =
         System.getenv("STRIPE_API_KEY")
+
     embeddedServer(
         Netty,
         port = (System.getenv("PORT") ?: "8080").toInt(),

@@ -3,6 +3,7 @@ package app.avocado.routes
 import app.avocado.SupabaseConfig.supabase
 import app.avocado.SupabaseConfig.supabaseAdmin
 import app.avocado.models.*
+import app.avocado.services.Stripe
 import app.avocado.utils.BadRequestException
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
@@ -25,6 +26,7 @@ fun Route.userRouting() {
             try {
                 call.setUserSession()
                 val user = supabase.from("users").select().decodeSingle<User>()
+                println(user)
                 call.respond(user)
             } catch (e: BadRequestException) {
                 call.respondText(e.message ?: "Bad Request", status = HttpStatusCode.BadRequest)
@@ -32,16 +34,18 @@ fun Route.userRouting() {
         }
         post("avatar") {
             try {
-                val data = call.receive<AvatarUpload>()
                 call.setUserSession()
-
+                val data = call.receive<AvatarUpload>()
                 val myUuid = UUID.randomUUID()
                 val myUuidAsString = myUuid.toString()
                 val imageData = Base64.getDecoder().decode(data.imageBase64)
                 val bucket = supabaseAdmin.storage.from("profilephotos")
 
                 // clear bucket first
-                bucket.delete(data.id)
+                if (data.currentAvatar !== null) {
+                    bucket.delete("${data.id}/${data.currentAvatar}")
+                }
+
                 println("uploading... id - ${data.id}")
                 bucket.upload("${data.id}/${myUuidAsString}.jpeg", imageData, upsert = true)
                 supabaseAdmin.from("users").update(
@@ -60,6 +64,134 @@ fun Route.userRouting() {
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
             }
         }
+        post("onboarding-complete/{id?}") {
+            try {
+                call.setUserSession()
+                val userId = call.parameters["id"] ?: return@post call.respondText(
+                    "Missing user id",
+                    status = HttpStatusCode.BadRequest
+                )
+                println(userId)
+                supabase.from("users").update(
+                    {
+                        User::isOnboarded setTo true
+                    }
+                ) {
+                    filter {
+                        User::id eq userId
+                    }
+                }
+                call.respond(PostSuccessResponse("Onboarding complete"))
+            } catch (e: Exception) {
+                println(e)
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
+            }
+        }
+        post("notifications/{id?}") {
+            try {
+                call.setUserSession()
+                val userId = call.parameters["id"] ?: return@post call.respondText(
+                    "Missing user id",
+                    status = HttpStatusCode.BadRequest
+                )
+                println(userId)
+                val data = call.receive<NotificationPreferences>()
+                supabase.from("users").update(
+                    {
+                        User::notificationPreferences setTo data
+                    }
+                ) {
+                    filter {
+                        User::id eq userId
+                    }
+                }
+                call.respond(PostSuccessResponse("Notifications updated successfully"))
+            } catch (e: Exception) {
+                println(e)
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
+            }
+        }
+    }
+    route("$baseUrl/user/stripe") {
+        get("account-details/{id?}") {
+            try {
+                call.setUserSession()
+                val userId = call.parameters["id"] ?: return@get call.respondText(
+                    "Missing user id",
+                    status = HttpStatusCode.BadRequest
+                )
+                val stripeAccount = supabaseAdmin.from("stripe_accounts").select() {
+                    filter {
+                        StripeAccount::id eq userId
+                    }
+                }.decodeSingleOrNull<StripeAccount>()
+                val stripe = stripeAccount?.let { it1 -> Stripe(it1.stripeAccountId) }
+                if (stripe != null) {
+                    stripe.setAccountId(stripeAccount.stripeAccountId)
+                    val stripeAccInfo = stripe.getAccountInfo()
+                    call.respond(AccountInfo(stripeAccInfo.chargesEnabled, stripeAccInfo.payoutsEnabled))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, "Stripe account not found")
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
+            }
+        }
+        get("balance/{id?}") {
+            val userId = call.parameters["id"] ?: return@get call.respondText(
+                "Missing user id",
+                status = HttpStatusCode.BadRequest
+            )
+            val stripeAccount = supabaseAdmin.from("stripe_accounts").select() {
+                filter {
+                    StripeAccount::id eq userId
+                }
+            }.decodeSingleOrNull<StripeAccount>()
+            val stripe = stripeAccount?.let { it1 -> Stripe(it1.stripeAccountId) }
+            if (stripe != null) {
+                stripe.setAccountId(stripeAccount.stripeAccountId)
+                val stripeAccBalanceJson = stripe.getAccountBalance().toJson()
+                val stripeAccBalance = deserializeAccountBalance(stripeAccBalanceJson)
+                call.respond(stripeAccBalance)
+            } else {
+                call.respond(HttpStatusCode.NotFound, "Stripe account not found")
+            }
+        }
+        post("/account-link") {
+            try {
+                call.setUserSession()
+                val stripeRequestBody = call.receive<StripeRequestBody>()
+                val stripeAccount = supabaseAdmin.from("stripe_accounts").select() {
+                    filter {
+                        StripeAccount::id eq stripeRequestBody.uid
+                    }
+                }.decodeList<StripeAccount>()
+                val stripe = Stripe(stripeRequestBody.uid)
+                if (stripeAccount.isEmpty()) {
+                    stripe.createStripeAccount()
+                    call.respond(
+                        AppAccountLink(
+                            stripe.createAccountLink(
+                                stripeRequestBody.returnUrl,
+                                stripeRequestBody.refreshUrl
+                            )
+                        )
+                    )
+                } else {
+                    stripe.setAccountId(stripeAccount[0].stripeAccountId)
+                    call.respond(
+                        AppAccountLink(
+                            stripe.createAccountLink(
+                                stripeRequestBody.returnUrl,
+                                stripeRequestBody.refreshUrl
+                            )
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
+            }
+        }
     }
     route("$baseUrl/user/verify") {
         post() {
@@ -67,16 +199,22 @@ fun Route.userRouting() {
                 call.setUserSession()
                 val userRequestBody = call.receive<UserId>()
                 val user = supabase.from("users").select().decodeList<User>()
-                println(user.isEmpty())
                 if (user.isEmpty()) {
                     // check if user is an artist
-                    val artist = supabase.from("artists").select().decodeList<Artist>()
+                    val artist = supabase.from("artists").select() {
+                        filter {
+                            Artist::id eq userRequestBody.uid
+                        }
+                    }.decodeList<Artist>()
                     if (artist.isEmpty()) {
                         supabase.from("users").insert(
                             User(
                                 userRequestBody.uid,
                                 defaultAvatarUrl,
-                                UserRole.USER
+                                UserRole.USER,
+                                null,
+                                isOnboarded = false,
+                                stripeOnboarded = false
                             )
                         )
                     } else {
@@ -84,7 +222,10 @@ fun Route.userRouting() {
                             User(
                                 userRequestBody.uid,
                                 artist[0].avatarUrl,
-                                UserRole.ARTIST
+                                UserRole.ARTIST,
+                                null,
+                                isOnboarded = false,
+                                stripeOnboarded = false
                             )
                         )
                     }
