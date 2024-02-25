@@ -9,7 +9,6 @@ import com.stripe.model.Balance
 import com.stripe.net.RequestOptions
 import com.stripe.param.AccountCreateParams
 import com.stripe.param.AccountLinkCreateParams
-import com.stripe.param.BalanceRetrieveParams
 import io.github.jan.supabase.postgrest.from
 
 
@@ -43,12 +42,12 @@ class Stripe(private val userId: String) {
     }
 
     fun getAccountBalance(): Balance {
-        val params = BalanceRetrieveParams.builder().build()
+//        val params = BalanceRetrieveParams.builder().build()
         val requestOptions =
             RequestOptions.builder().setStripeAccount(accountId).build()
         val client =
             StripeClient(System.getenv("STRIPE_API_KEY"))
-        val balance: Balance = client.balance().retrieve(params, requestOptions)
+        val balance: Balance = client.balance().retrieve(null, requestOptions)
 
         return balance
     }

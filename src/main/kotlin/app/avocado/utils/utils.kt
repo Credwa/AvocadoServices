@@ -1,11 +1,20 @@
 package app.avocado.utils
 
 import app.avocado.SupabaseConfig.supabase
+import app.avocado.models.PaymentIntentPost
+import app.avocado.models.PaymentIntentResponse
+import com.stripe.model.EphemeralKey
+import com.stripe.model.PaymentIntent
+import com.stripe.param.EphemeralKeyCreateParams
+import com.stripe.param.PaymentIntentCreateParams
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserSession
 import io.ktor.server.application.*
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 
 class BadRequestException(message: String) : RuntimeException(message)
@@ -45,5 +54,55 @@ suspend fun ApplicationCall.setUserSession() {
         )
         // don't refresh session on backend. We handle refreshes on frontend.
         supabase.auth.stopAutoRefreshForCurrentSession()
+    }
+}
+
+fun addDaysToTimestampWithZone(timestamp: String?, daysToAdd: Long, zoneId: String): Instant {
+    // Parse the timestamp string to a ZonedDateTime
+    val initialDateTime = ZonedDateTime.ofInstant(Instant.parse(timestamp), ZoneId.of(zoneId))
+    // Add and return the specified number of days
+    return initialDateTime.plusDays(daysToAdd).toInstant()
+}
+
+fun createPaymentIntent(customerId: String, price: Long, paymentIntentPost: PaymentIntentPost): PaymentIntentResponse {
+    try {
+        val ephemeralKeyParams =
+            EphemeralKeyCreateParams.builder()
+                .setStripeVersion("2023-10-16")
+                .setCustomer(customerId)
+                .build()
+
+        val ephemeralKey = EphemeralKey.create(ephemeralKeyParams)
+
+        val metaDataMap: Map<String, String> = mapOf(
+            "userId" to paymentIntentPost.uid,
+            "songId" to paymentIntentPost.songId,
+            "uid" to paymentIntentPost.uid,
+            "quantity" to paymentIntentPost.quantity.toString()
+        )
+
+        val paymentIntentParams =
+            PaymentIntentCreateParams.builder()
+                .setAmount(price)
+                .setCurrency("usd")
+                .setCustomer(customerId)
+                .setDescription("Purchased ${paymentIntentPost.quantity} shares of song ${paymentIntentPost.songName} by ${paymentIntentPost.artistName}")
+                .setReceiptEmail(paymentIntentPost.email)
+                .putAllMetadata(metaDataMap)
+                .build()
+        val paymentIntent = PaymentIntent.create(paymentIntentParams)
+
+        val paymentIntentResponse = PaymentIntentResponse(
+            paymentIntent.clientSecret,
+            ephemeralKey.secret,
+            customerId,
+            "pk_test_51OEgCAD0PCnrjk8E0WhE2BnEJ5Ij9zgjD2lITATKCg8vzdEsYcAELFYFcJqMPsDjy0LlhgBBnt6WLHsxhYdMeZ3c00YW7Bp8el"
+        )
+
+        println("here 4 $paymentIntentResponse")
+        return paymentIntentResponse
+    } catch (e: Exception) {
+        println(e)
+        throw e
     }
 }

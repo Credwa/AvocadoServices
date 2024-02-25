@@ -35,6 +35,29 @@ data class Balance(
     val currency: String
 )
 
+@Serializable
+data class PaymentIntentPost(
+    val songId: String,
+    val uid: String,
+    val quantity: Int,
+    val email: String,
+    val songName: String,
+    val artistName: String
+)
+
+@Serializable
+data class PaymentIntentResponse(
+    val paymentIntent: String,
+    val ephemeralKey: String,
+    val customer: String,
+    val publishableKey: String
+)
+
+@Serializable
+data class SupabaseCustomer(
+    val id: String,
+    @SerialName("stripe_customer_id") val customerId: String
+)
 
 fun deserializeAccountBalance(jsonString: String): AccountBalance {
     val json = Json { ignoreUnknownKeys = true }
