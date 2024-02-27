@@ -3,7 +3,6 @@ package app.avocado
 import app.avocado.plugins.configureHTTP
 import app.avocado.plugins.configureRouting
 import app.avocado.plugins.configureSerialization
-import app.avocado.utils.closeUserSession
 import app.avocado.utils.setUserSession
 import com.stripe.Stripe
 import io.ktor.server.application.*
@@ -36,7 +35,7 @@ fun Application.module() {
     intercept(ApplicationCallPipeline.Fallback) {
         if (call.request.httpMethod == io.ktor.http.HttpMethod.Post || call.request.httpMethod == io.ktor.http.HttpMethod.Get) {
             // Code to run after processing request
-            call.closeUserSession()
+//            call.closeUserSession()
         }
     }
 

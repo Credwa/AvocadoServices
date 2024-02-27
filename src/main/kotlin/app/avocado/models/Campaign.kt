@@ -97,7 +97,7 @@ data class Campaign(
     @SerialName("artwork_url") val artworkUrl: String,
     @SerialName("audio_url") val audioUrl: String,
     @SerialName("primary_genre") val primaryGenre: String,
-    @SerialName("secondary_genre") val secondaryGenre: String,
+    @SerialName("secondary_genre") val secondaryGenre: String?,
     @SerialName("explicit_lyrics") val explicitLyrics: Boolean,
     @SerialName("add_version_info") val versionInfo: String,
     @SerialName("add_version_info_other") val addVersionInfoOther: String,
