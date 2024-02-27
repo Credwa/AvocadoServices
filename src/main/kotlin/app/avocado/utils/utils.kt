@@ -57,6 +57,10 @@ suspend fun ApplicationCall.setUserSession() {
     }
 }
 
+suspend fun ApplicationCall.closeUserSession() {
+    supabase.auth.signOut()
+}
+
 fun addDaysToTimestampWithZone(timestamp: String?, daysToAdd: Long, zoneId: String): Instant {
     // Parse the timestamp string to a ZonedDateTime
     val initialDateTime = ZonedDateTime.ofInstant(Instant.parse(timestamp), ZoneId.of(zoneId))

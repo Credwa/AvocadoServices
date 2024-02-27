@@ -3,7 +3,10 @@ package app.avocado.routes
 import app.avocado.SupabaseConfig.supabase
 import app.avocado.SupabaseConfig.supabaseAdmin
 import app.avocado.models.*
-import app.avocado.utils.*
+import app.avocado.utils.PostSuccessResponse
+import app.avocado.utils.addDaysToTimestampWithZone
+import app.avocado.utils.baseUrl
+import app.avocado.utils.createPaymentIntent
 import com.stripe.model.Customer
 import com.stripe.param.CustomerCreateParams
 import io.github.jan.supabase.postgrest.from
@@ -25,7 +28,6 @@ import java.time.ZonedDateTime
 fun Route.campaignRouting() {
     route("${baseUrl}/search") {
         get {
-            call.setUserSession()
             // Extracting 'limit' and 'offset' from the query string
             // Providing default values if they are not specified in the request
             val limit = call.parameters["limit"]?.toIntOrNull() ?: 10 // Default limit
@@ -46,7 +48,6 @@ fun Route.campaignRouting() {
     }
     route("$baseUrl/campaigns/recent") {
         get {
-            call.setUserSession()
             val latestCampaigns = supabase.postgrest.rpc("get_latest_campaigns")
                 .decodeList<CampaignInfo>()
             call.respond(latestCampaigns)
@@ -54,8 +55,14 @@ fun Route.campaignRouting() {
     }
     route("$baseUrl/campaigns/featured") {
         get {
-            call.setUserSession()
             val featuredCampaigns = supabase.postgrest.rpc("get_featured_campaigns")
+                .decodeList<CampaignInfo>()
+            call.respond(featuredCampaigns)
+        }
+    }
+    route("$baseUrl/campaigns/upcoming") {
+        get {
+            val featuredCampaigns = supabase.postgrest.rpc("get_upcoming_campaigns")
                 .decodeList<CampaignInfo>()
             call.respond(featuredCampaigns)
         }
@@ -63,7 +70,6 @@ fun Route.campaignRouting() {
     route("$baseUrl/campaigns/purchase") {
         post("payment-sheet") {
             try {
-                call.setUserSession()
                 val postData = call.receive<PaymentIntentPost>()
                 // get stripe customer info
                 val customerInfo = supabaseAdmin.from("customers").select() {
@@ -129,7 +135,6 @@ fun Route.campaignRouting() {
                 "Missing song id",
                 status = HttpStatusCode.BadRequest
             )
-            call.setUserSession()
             val purchaseDetails = call.receive<NewCampaignPurchase>()
             purchaseDetails.songid = songId
             supabase.postgrest.rpc(
@@ -143,7 +148,6 @@ fun Route.campaignRouting() {
                 "Missing user id",
                 status = HttpStatusCode.BadRequest
             )
-            call.setUserSession()
             val userPurchasedSongs = supabase.postgrest.rpc(
                 "get_user_purchased_songs",
                 UserId(userId)
@@ -167,7 +171,6 @@ fun Route.campaignRouting() {
                 shares
             """.trimIndent().lines().joinToString("")
             )
-            call.setUserSession()
 
             val purchaseInfo = supabase.from("song_purchases").select(columns = columns) {
                 filter {
@@ -216,7 +219,8 @@ fun Route.campaignRouting() {
               id,
               artist_name,
               avatar_url,
-              is_verified
+              is_verified,
+              role
             )
             """.trimIndent().lines().joinToString("")
             )
@@ -235,7 +239,6 @@ fun Route.campaignRouting() {
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
-            call.setUserSession()
             val columns = Columns.raw(
                 """
             id,

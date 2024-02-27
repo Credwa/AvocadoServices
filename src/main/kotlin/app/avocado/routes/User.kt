@@ -7,7 +7,6 @@ import app.avocado.services.Stripe
 import app.avocado.utils.BadRequestException
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
-import app.avocado.utils.setUserSession
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.*
@@ -24,7 +23,6 @@ fun Route.userRouting() {
     route("$baseUrl/user/me") {
         get() {
             try {
-                call.setUserSession()
                 val user = supabase.from("users").select().decodeSingle<User>()
                 println(user)
                 call.respond(user)
@@ -34,7 +32,6 @@ fun Route.userRouting() {
         }
         post("avatar") {
             try {
-                call.setUserSession()
                 val data = call.receive<AvatarUpload>()
                 val myUuid = UUID.randomUUID()
                 val myUuidAsString = myUuid.toString()
@@ -66,7 +63,6 @@ fun Route.userRouting() {
         }
         post("onboarding-complete/{id?}") {
             try {
-                call.setUserSession()
                 val userId = call.parameters["id"] ?: return@post call.respondText(
                     "Missing user id",
                     status = HttpStatusCode.BadRequest
@@ -89,7 +85,6 @@ fun Route.userRouting() {
         }
         post("notifications/{id?}") {
             try {
-                call.setUserSession()
                 val userId = call.parameters["id"] ?: return@post call.respondText(
                     "Missing user id",
                     status = HttpStatusCode.BadRequest
@@ -115,7 +110,6 @@ fun Route.userRouting() {
     route("$baseUrl/user/stripe") {
         get("account-details/{id?}") {
             try {
-                call.setUserSession()
                 val userId = call.parameters["id"] ?: return@get call.respondText(
                     "Missing user id",
                     status = HttpStatusCode.BadRequest
@@ -159,7 +153,6 @@ fun Route.userRouting() {
         }
         post("/account-link") {
             try {
-                call.setUserSession()
                 val stripeRequestBody = call.receive<StripeRequestBody>()
                 val stripeAccount = supabaseAdmin.from("stripe_accounts").select() {
                     filter {
@@ -196,7 +189,6 @@ fun Route.userRouting() {
     route("$baseUrl/user/verify") {
         post() {
             try {
-                call.setUserSession()
                 val userRequestBody = call.receive<UserId>()
                 val user = supabase.from("users").select().decodeList<User>()
                 if (user.isEmpty()) {

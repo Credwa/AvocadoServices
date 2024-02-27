@@ -38,7 +38,7 @@ data class Activity(
 )
 
 @Serializable
-data class ArtistActivites(
+data class ArtistActivities(
     val activities: List<Activity>
 )
 
@@ -52,7 +52,7 @@ data class ArtistDetails(
     @SerialName("is_verified") val isVerified: Boolean,
     @SerialName("artist_links") val artistLinks: ArtistLinks,
     @SerialName("artist_stats") val artistStats: ArtistStats,
-    @SerialName("artist_activities") val artistActivities: ArtistActivites,
+    @SerialName("artist_activities") val artistActivities: ArtistActivities,
     val songs: List<ArtistSong>
 )
 
@@ -66,8 +66,10 @@ data class ArtistSong(
     @SerialName("add_version_info") val versionInfo: String,
     @SerialName("add_version_info_other") val addVersionInfoOther: String,
     @SerialName("is_radio_edit") val isRadioEdit: Boolean,
-    val duration: Double?
+    val duration: Double?,
+    val status: String
 )
+
 
 @Serializable
 data class ArtistLinks(

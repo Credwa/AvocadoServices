@@ -5,7 +5,6 @@ import app.avocado.SupabaseConfig.supabaseAdmin
 import app.avocado.models.Artist
 import app.avocado.models.ArtistDetails
 import app.avocado.utils.baseUrl
-import app.avocado.utils.setUserSession
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
@@ -18,7 +17,6 @@ import io.ktor.server.routing.*
 fun Route.artistRouting() {
     route("$baseUrl/artists/featured") {
         get {
-            call.setUserSession()
             val featuredCampaigns = supabase.postgrest.rpc("get_featured_artists")
                 .decodeList<Artist>()
             call.respond(featuredCampaigns)
@@ -51,7 +49,8 @@ fun Route.artistRouting() {
                     add_version_info,
                     add_version_info_other,
                     is_radio_edit,
-                    duration
+                    duration,
+                    status
                 )
             """.trimIndent().lines().joinToString("")
             )
@@ -61,7 +60,6 @@ fun Route.artistRouting() {
                     ArtistDetails::id eq artistId
                 }
             }.decodeSingle<ArtistDetails>()
-
             call.respond(artistDetails)
         }
     }
