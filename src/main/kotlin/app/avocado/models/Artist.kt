@@ -52,7 +52,7 @@ data class ArtistDetails(
     @SerialName("is_verified") val isVerified: Boolean,
     @SerialName("artist_links") val artistLinks: ArtistLinks,
     @SerialName("artist_stats") val artistStats: ArtistStats,
-    @SerialName("artist_activities") val artistActivities: ArtistActivities,
+    @SerialName("artist_activities") val artistActivities: ArtistActivities?,
     val songs: List<ArtistSong>
 )
 
