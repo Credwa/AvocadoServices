@@ -29,7 +29,7 @@ data class UserCampaignPurchases(
     @SerialName("explicit_lyrics") val explicitLyrics: Boolean,
     @SerialName("artist_name") val artistName: String,
     @SerialName("add_version_info") val versionInfo: String,
-    @SerialName("add_version_info_other") val addVersionInfoOther: String,
+    @SerialName("add_version_info_other") val addVersionInfoOther: String?,
     @SerialName("is_radio_edit") val isRadioEdit: Boolean,
     @SerialName("latest_purchase") val latestPurchase: String,
     @SerialName("total_shares") val totalShares: Int
@@ -72,7 +72,7 @@ data class CampaignInfo(
     @SerialName("explicit_lyrics") val explicitLyrics: Boolean,
     @SerialName("artist_name") val artistName: String,
     @SerialName("add_version_info") val versionInfo: String,
-    @SerialName("add_version_info_other") val addVersionInfoOther: String,
+    @SerialName("add_version_info_other") val addVersionInfoOther: String?,
     @SerialName("is_radio_edit") val isRadioEdit: Boolean,
     val duration: Double?
 )
@@ -100,7 +100,7 @@ data class Campaign(
     @SerialName("secondary_genre") val secondaryGenre: String?,
     @SerialName("explicit_lyrics") val explicitLyrics: Boolean,
     @SerialName("add_version_info") val versionInfo: String,
-    @SerialName("add_version_info_other") val addVersionInfoOther: String,
+    @SerialName("add_version_info_other") val addVersionInfoOther: String?,
     @SerialName("is_radio_edit") val isRadioEdit: Boolean,
     val status: CampaignStatus,
     val duration: Double?,

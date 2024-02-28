@@ -64,7 +64,7 @@ data class ArtistSong(
     @SerialName("audio_url") val audioUrl: String,
     @SerialName("explicit_lyrics") val explicitLyrics: Boolean,
     @SerialName("add_version_info") val versionInfo: String,
-    @SerialName("add_version_info_other") val addVersionInfoOther: String,
+    @SerialName("add_version_info_other") val addVersionInfoOther: String?,
     @SerialName("is_radio_edit") val isRadioEdit: Boolean,
     val duration: Double?,
     val status: String

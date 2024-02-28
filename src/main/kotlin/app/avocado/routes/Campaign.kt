@@ -232,13 +232,18 @@ fun Route.campaignRouting() {
                 range(rangeFrom, rangeTo)
             }.decodeList<Campaign>()
 
-            call.respond(campaigns)
+            val filteredCampaigns = campaigns.filter { campaign ->
+                campaign.campaignDetails?.campaignStartDate != null
+            }
+
+            call.respond(filteredCampaigns)
         }
         get("{id?}") {
             val songId = call.parameters["id"] ?: return@get call.respondText(
                 "Missing id",
                 status = HttpStatusCode.BadRequest
             )
+            println("my id $songId")
             val columns = Columns.raw(
                 """
             id,

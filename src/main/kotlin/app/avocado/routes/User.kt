@@ -190,7 +190,13 @@ fun Route.userRouting() {
         post() {
             try {
                 val userRequestBody = call.receive<UserId>()
-                val user = supabase.from("users").select().decodeList<User>()
+                println(userRequestBody)
+                val user = supabaseAdmin.from("users").select() {
+                    filter {
+                        User::id eq userRequestBody.uid
+                    }
+                }.decodeList<User>()
+                println(user)
                 if (user.isEmpty()) {
                     // check if user is an artist
                     val artist = supabase.from("artists").select() {
