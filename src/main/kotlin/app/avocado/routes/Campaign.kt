@@ -3,10 +3,7 @@ package app.avocado.routes
 import app.avocado.SupabaseConfig.supabase
 import app.avocado.SupabaseConfig.supabaseAdmin
 import app.avocado.models.*
-import app.avocado.utils.PostSuccessResponse
-import app.avocado.utils.addDaysToTimestampWithZone
-import app.avocado.utils.baseUrl
-import app.avocado.utils.createPaymentIntent
+import app.avocado.utils.*
 import com.stripe.model.Customer
 import com.stripe.param.CustomerCreateParams
 import io.github.jan.supabase.postgrest.from
@@ -128,8 +125,63 @@ fun Route.campaignRouting() {
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong. Could not complete purchase")
             }
-
         }
+
+        post("payment-sheet/released") {
+            try {
+                val postData = call.receive<PaymentIntentPostReleased>()
+                // get stripe customer info
+                val customerInfo = supabaseAdmin.from("customers").select() {
+                    filter {
+                        SupabaseCustomer::id eq postData.uid
+                    }
+                }.decodeSingleOrNull<SupabaseCustomer>()
+                // get campaign details to purchase
+                val campaignDetails = supabaseAdmin.from("campaign_details").select() {
+                    filter {
+                        eq("song_id", postData.songId)
+                    }
+                }.decodeSingleOrNull<CampaignDetails>()
+                // validate campaign details before purchase
+                if (campaignDetails === null) {
+                    call.respond(HttpStatusCode.BadRequest, "Campaign not found")
+                    return@post
+                } else {
+                    val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
+                    val timestampInstant = ZonedDateTime.parse(campaignDetails.campaignStartDate, formatter).toInstant()
+                    val currentInstant = Instant.now()
+
+                    if (timestampInstant.isBefore(currentInstant)) {
+                        val startDatePlusTimeRestraint = addDaysToTimestampWithZone(
+                            campaignDetails.campaignStartDate,
+                            campaignDetails.timeRestraint.toLong(),
+                            "UTC"
+                        )
+                        if (!startDatePlusTimeRestraint.isBefore(currentInstant)) {
+                            println("Tried to purchase-released to a campaign that's still ongoing")
+                            call.respond(HttpStatusCode.BadRequest, "Error purchasing")
+                            return@post
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Campaign not yet started")
+                        return@post
+                    }
+                }
+
+                if (customerInfo === null) {
+                    // create customer for purchase if not exists
+                    val customerParams = CustomerCreateParams.builder().setEmail(postData.email).build()
+                    val customer = Customer.create(customerParams)
+                    supabaseAdmin.from("customers").insert(SupabaseCustomer(postData.uid, customer.id))
+                    call.respond(createPaymentIntentForDonation(customer.id, postData.amount, postData))
+                } else {
+                    call.respond(createPaymentIntentForDonation(customerInfo.customerId, postData.amount, postData))
+                }
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong. Could not complete purchase")
+            }
+        }
+
         post("{id?}") {
             val songId = call.parameters["id"] ?: return@post call.respondText(
                 "Missing song id",

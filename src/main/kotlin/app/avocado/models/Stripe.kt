@@ -46,6 +46,16 @@ data class PaymentIntentPost(
 )
 
 @Serializable
+data class PaymentIntentPostReleased(
+    val songId: String,
+    val uid: String,
+    val email: String,
+    val songName: String,
+    val artistName: String,
+    val amount: Long
+)
+
+@Serializable
 data class PaymentIntentResponse(
     val paymentIntent: String,
     val ephemeralKey: String,

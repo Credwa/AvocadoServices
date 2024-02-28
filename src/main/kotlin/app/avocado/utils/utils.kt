@@ -2,6 +2,7 @@ package app.avocado.utils
 
 import app.avocado.SupabaseConfig.supabase
 import app.avocado.models.PaymentIntentPost
+import app.avocado.models.PaymentIntentPostReleased
 import app.avocado.models.PaymentIntentResponse
 import com.stripe.model.EphemeralKey
 import com.stripe.model.PaymentIntent
@@ -100,7 +101,54 @@ fun createPaymentIntent(customerId: String, price: Long, paymentIntentPost: Paym
             paymentIntent.clientSecret,
             ephemeralKey.secret,
             customerId,
-            "pk_test_51OEgCAD0PCnrjk8E0WhE2BnEJ5Ij9zgjD2lITATKCg8vzdEsYcAELFYFcJqMPsDjy0LlhgBBnt6WLHsxhYdMeZ3c00YW7Bp8el"
+            System.getenv("STRIPE_PUBLISHABLE_KEY")
+        )
+
+        println("here 4 $paymentIntentResponse")
+        return paymentIntentResponse
+    } catch (e: Exception) {
+        println(e)
+        throw e
+    }
+}
+
+fun createPaymentIntentForDonation(
+    customerId: String,
+    price: Long,
+    paymentIntentPost: PaymentIntentPostReleased
+): PaymentIntentResponse {
+    try {
+        val ephemeralKeyParams =
+            EphemeralKeyCreateParams.builder()
+                .setStripeVersion("2023-10-16")
+                .setCustomer(customerId)
+                .build()
+
+        val ephemeralKey = EphemeralKey.create(ephemeralKeyParams)
+
+        val metaDataMap: Map<String, String> = mapOf(
+            "userId" to paymentIntentPost.uid,
+            "songId" to paymentIntentPost.songId,
+            "uid" to paymentIntentPost.uid,
+            "quantity" to "0"
+        )
+
+        val paymentIntentParams =
+            PaymentIntentCreateParams.builder()
+                .setAmount(price)
+                .setCurrency("usd")
+                .setCustomer(customerId)
+                .setDescription("Purchased song ${paymentIntentPost.songName} by ${paymentIntentPost.artistName} for $price")
+                .setReceiptEmail(paymentIntentPost.email)
+                .putAllMetadata(metaDataMap)
+                .build()
+        val paymentIntent = PaymentIntent.create(paymentIntentParams)
+
+        val paymentIntentResponse = PaymentIntentResponse(
+            paymentIntent.clientSecret,
+            ephemeralKey.secret,
+            customerId,
+            System.getenv("STRIPE_PUBLISHABLE_KEY")
         )
 
         println("here 4 $paymentIntentResponse")
