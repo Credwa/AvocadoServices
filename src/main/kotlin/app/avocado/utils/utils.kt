@@ -144,6 +144,7 @@ fun createPaymentIntentForDonation(
                 .build()
         val paymentIntent = PaymentIntent.create(paymentIntentParams)
 
+        println("here")
         val paymentIntentResponse = PaymentIntentResponse(
             paymentIntent.clientSecret,
             ephemeralKey.secret,

@@ -220,7 +220,8 @@ fun Route.campaignRouting() {
                 song_id,
                 user_id,
                 created_at,
-                shares
+                shares,
+                donation_amount
             """.trimIndent().lines().joinToString("")
             )
 
@@ -234,6 +235,7 @@ fun Route.campaignRouting() {
                 order(column = "created_at", order = Order.DESCENDING)
             }.decodeList<PurchaseInfo>()
 
+            println(purchaseInfo)
             call.respond(purchaseInfo)
         }
     }

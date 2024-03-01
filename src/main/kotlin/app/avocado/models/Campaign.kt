@@ -17,6 +17,7 @@ data class PurchaseInfo(
     @SerialName("song_id") val songId: String,
     @SerialName("created_at") val createdAt: String,
     val shares: Int,
+    @SerialName("donation_amount") val donationAmount: Long?
 )
 
 @Serializable
