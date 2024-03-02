@@ -19,7 +19,6 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.Instant
-import java.time.ZonedDateTime
 
 
 fun Route.campaignRouting() {
@@ -85,8 +84,7 @@ fun Route.campaignRouting() {
                     call.respond(HttpStatusCode.BadRequest, "Campaign not found")
                     return@post
                 } else {
-                    val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
-                    val timestampInstant = ZonedDateTime.parse(campaignDetails.campaignStartDate, formatter).toInstant()
+                    val campaignTimestampInstant = Instant.parse(campaignDetails.campaignStartDate)
                     val currentInstant = Instant.now()
 
                     if (campaignDetails.availableShares < postData.quantity) {
@@ -95,7 +93,7 @@ fun Route.campaignRouting() {
                         return@post
                     }
 
-                    if (timestampInstant.isBefore(currentInstant)) {
+                    if (campaignTimestampInstant.isBefore(currentInstant)) {
                         val startDatePlusTimeRestraint = addDaysToTimestampWithZone(
                             campaignDetails.campaignStartDate,
                             campaignDetails.timeRestraint.toLong(),
@@ -148,11 +146,10 @@ fun Route.campaignRouting() {
                     call.respond(HttpStatusCode.BadRequest, "Campaign not found")
                     return@post
                 } else {
-                    val formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
-                    val timestampInstant = ZonedDateTime.parse(campaignDetails.campaignStartDate, formatter).toInstant()
+                    val campaignTimestampInstant = Instant.parse(campaignDetails.campaignStartDate)
                     val currentInstant = Instant.now()
 
-                    if (timestampInstant.isBefore(currentInstant)) {
+                    if (campaignTimestampInstant.isBefore(currentInstant)) {
                         val startDatePlusTimeRestraint = addDaysToTimestampWithZone(
                             campaignDetails.campaignStartDate,
                             campaignDetails.timeRestraint.toLong(),
