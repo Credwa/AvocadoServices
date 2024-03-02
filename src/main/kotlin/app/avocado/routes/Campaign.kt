@@ -123,6 +123,7 @@ fun Route.campaignRouting() {
                     call.respond(createPaymentIntent(customerInfo.customerId, totalPrice, postData))
                 }
             } catch (e: Exception) {
+                println(e)
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong. Could not complete purchase")
             }
         }
@@ -178,6 +179,7 @@ fun Route.campaignRouting() {
                     call.respond(createPaymentIntentForDonation(customerInfo.customerId, postData.amount, postData))
                 }
             } catch (e: Exception) {
+                println(e)
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong. Could not complete purchase")
             }
         }

@@ -14,7 +14,13 @@ data class User(
     val role: UserRole,
     @SerialName("notification_preferences") val notificationPreferences: NotificationPreferences?,
     @SerialName("is_onboarded") val isOnboarded: Boolean?,
-    @SerialName("stripe_onboarding_complete") val stripeOnboarded: Boolean?
+    @SerialName("stripe_onboarding_complete") val stripeOnboarded: Boolean?,
+    @SerialName("expo_push_token") val expoPushToken: String?
+)
+
+@Serializable
+data class NotificationTokenPost(
+    val token: String
 )
 
 @Serializable

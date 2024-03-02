@@ -106,6 +106,29 @@ fun Route.userRouting() {
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
             }
         }
+        post("notifications/{id?}/token") {
+            try {
+                val userId = call.parameters["id"] ?: return@post call.respondText(
+                    "Missing user id",
+                    status = HttpStatusCode.BadRequest
+                )
+                println(userId)
+                val data = call.receive<NotificationTokenPost>()
+                supabase.from("users").update(
+                    {
+                        User::expoPushToken setTo data.token
+                    }
+                ) {
+                    filter {
+                        User::id eq userId
+                    }
+                }
+                call.respond(PostSuccessResponse("Expo push token updated successfully"))
+            } catch (e: Exception) {
+                println(e)
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
+            }
+        }
     }
     route("$baseUrl/user/stripe") {
         get("account-details/{id?}") {
@@ -212,7 +235,8 @@ fun Route.userRouting() {
                                 UserRole.USER,
                                 null,
                                 isOnboarded = false,
-                                stripeOnboarded = false
+                                stripeOnboarded = false,
+                                expoPushToken = null
                             )
                         )
                     } else {
@@ -223,7 +247,8 @@ fun Route.userRouting() {
                                 UserRole.ARTIST,
                                 null,
                                 isOnboarded = false,
-                                stripeOnboarded = false
+                                stripeOnboarded = false,
+                                expoPushToken = null
                             )
                         )
                     }
