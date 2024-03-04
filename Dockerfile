@@ -1,4 +1,4 @@
-FROM gradle:7-jdk11 AS build
+FROM gradle:7.5-jdk17 AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle buildFatJar
@@ -11,7 +11,7 @@ RUN apt-get update
 RUN apt-get install -y dos2unix
 RUN dos2unix gradlew
 
-WORKDIR /run
+WORKDIR /rung
 COPY --from=build /home/gradle/src/build/libs/*.jar /run/server.jar
 
 EXPOSE 8080
