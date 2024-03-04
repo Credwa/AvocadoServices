@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.9.21"
     id("io.ktor.plugin") version "2.3.7"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
-
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "app.avocado"
