@@ -3,7 +3,7 @@ COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle buildFatJar
 
-FROM openjdk:11-jdk-slim
+FROM openjdk:17-jdk-slim
 WORKDIR /src
 COPY . /src
 
