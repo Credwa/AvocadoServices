@@ -38,7 +38,6 @@ fun Application.module() {
 //            call.closeUserSession()
         }
     }
-
     configureSerialization()
     configureHTTP()
     configureRouting()
