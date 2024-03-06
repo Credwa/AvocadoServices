@@ -13,3 +13,8 @@ data class FollowArtistPost(
 data class FollowStatus(
     val isFollowing: Boolean
 )
+
+@Serializable
+data class FollowingCount(
+    val count: Long
+)

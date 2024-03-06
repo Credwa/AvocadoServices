@@ -3,6 +3,7 @@ package app.avocado.routes
 import app.avocado.SupabaseConfig.supabase
 import app.avocado.models.FollowArtistPost
 import app.avocado.models.FollowStatus
+import app.avocado.models.FollowingCount
 import app.avocado.utils.BadRequestException
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
@@ -17,12 +18,19 @@ import io.ktor.server.routing.*
 
 fun Route.relationshipsRouting() {
     route("$baseUrl/relationships") {
-        get("following/total") {
+        get("following/total/{userId?}") {
             try {
+                val userId = call.parameters["userId"] ?: return@get call.respondText(
+                    "Missing user id",
+                    status = HttpStatusCode.BadRequest
+                )
                 val count = supabase.from("artist_followers").select(head = true) {
+                    filter {
+                        eq("user_id", userId)
+                    }
                     count(Count.PLANNED)
                 }.countOrNull()!!
-                call.respond(HttpStatusCode.OK, count)
+                call.respond(FollowingCount(count))
             } catch (e: BadRequestException) {
                 call.respond(HttpStatusCode.BadRequest, "Something went wrong. Try again later")
             }

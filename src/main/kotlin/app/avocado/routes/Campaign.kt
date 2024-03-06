@@ -180,7 +180,6 @@ fun Route.campaignRouting() {
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong. Could not complete purchase")
             }
         }
-
         post("{id?}") {
             val songId = call.parameters["id"] ?: return@post call.respondText(
                 "Missing song id",
