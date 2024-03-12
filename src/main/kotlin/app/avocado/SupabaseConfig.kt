@@ -35,6 +35,10 @@ object SupabaseConfig {
                 ignoreUnknownKeys = true //apply your custom config
             })
             install(Postgrest) {}
+            install(Auth) {
+                alwaysAutoRefresh = false
+                autoLoadFromStorage = false
+            }
             install(Storage) {}
         }
     }

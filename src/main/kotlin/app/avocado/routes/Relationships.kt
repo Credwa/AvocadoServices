@@ -28,7 +28,7 @@ fun Route.relationshipsRouting() {
                     filter {
                         eq("user_id", userId)
                     }
-                    count(Count.PLANNED)
+                    count(Count.EXACT)
                 }.countOrNull()!!
                 call.respond(FollowingCount(count))
             } catch (e: BadRequestException) {
