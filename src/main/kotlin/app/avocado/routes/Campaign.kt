@@ -142,10 +142,11 @@ fun Route.campaignRouting() {
                     }
                 }.decodeSingleOrNull<CampaignDetails>()
                 // validate campaign details before purchase
+
                 if (campaignDetails === null) {
                     call.respond(HttpStatusCode.BadRequest, "Campaign not found")
                     return@post
-                } else {
+                } else if (campaignDetails.campaignStartDate !== null) {
                     val campaignTimestampInstant = Instant.parse(campaignDetails.campaignStartDate)
                     val currentInstant = Instant.now()
 
