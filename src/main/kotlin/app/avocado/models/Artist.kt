@@ -50,8 +50,8 @@ data class ArtistDetails(
     val bio: String?,
     @SerialName("video_url") val videoUrl: String?,
     @SerialName("is_verified") val isVerified: Boolean,
-    @SerialName("artist_links") val artistLinks: ArtistLinks,
-    @SerialName("artist_stats") val artistStats: ArtistStats,
+    @SerialName("artist_links") val artistLinks: ArtistLinks?,
+    @SerialName("artist_stats") val artistStats: ArtistStats?,
     @SerialName("artist_activities") val artistActivities: ArtistActivities?,
     val songs: List<ArtistSong>
 )
