@@ -262,6 +262,7 @@ fun Route.campaignRouting() {
             explicit_lyrics,
             status,
             duration,
+            artist_features,
             campaign_details (
               available_shares,
               price_per_share,
@@ -313,6 +314,7 @@ fun Route.campaignRouting() {
             explicit_lyrics,
             status,
             duration,
+            artist_features,
             campaign_details (
               available_shares,
               price_per_share,

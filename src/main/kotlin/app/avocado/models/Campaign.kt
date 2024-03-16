@@ -103,6 +103,7 @@ data class Campaign(
     @SerialName("add_version_info") val versionInfo: String,
     @SerialName("add_version_info_other") val addVersionInfoOther: String?,
     @SerialName("is_radio_edit") val isRadioEdit: Boolean,
+    @SerialName("artist_features") val artistFeatures: List<String>?,
     val status: CampaignStatus,
     val duration: Double?,
     @SerialName("campaign_details") val campaignDetails: CampaignDetails?,
