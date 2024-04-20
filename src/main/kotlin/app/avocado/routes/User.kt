@@ -40,7 +40,7 @@ fun Route.userRouting() {
                 val bucket = supabaseAdmin.storage.from("profilephotos")
 
                 // clear bucket first
-                if (data.currentAvatar !== '') {
+                if (data.currentAvatar !== "") {
                     bucket.delete("${data.id}/${data.currentAvatar}")
                 }
 
