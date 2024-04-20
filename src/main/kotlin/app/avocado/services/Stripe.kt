@@ -31,7 +31,10 @@ class Stripe(private val userId: String) {
                 .setType(AccountLinkCreateParams.Type.ACCOUNT_ONBOARDING)
                 .build()
 
+        println("hello $params $accountId")
         val accountLink = AccountLink.create(params)
+
+        println(accountLink)
 
         return accountLink.url
     }

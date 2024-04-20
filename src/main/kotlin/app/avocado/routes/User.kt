@@ -33,6 +33,7 @@ fun Route.userRouting() {
         post("avatar") {
             try {
                 val data = call.receive<AvatarUpload>()
+                println("avatar upload received")
                 val myUuid = UUID.randomUUID()
                 val myUuidAsString = myUuid.toString()
                 val imageData = Base64.getDecoder().decode(data.imageBase64)
@@ -195,13 +196,15 @@ fun Route.userRouting() {
                     )
                 } else {
                     stripe.setAccountId(stripeAccount[0].stripeAccountId)
+                    val accountLink = stripe.createAccountLink(
+                        stripeRequestBody.returnUrl,
+                        stripeRequestBody.refreshUrl
+                    )
+                    val appAccountLink = AppAccountLink(
+                        accountLink
+                    )
                     call.respond(
-                        AppAccountLink(
-                            stripe.createAccountLink(
-                                stripeRequestBody.returnUrl,
-                                stripeRequestBody.refreshUrl
-                            )
-                        )
+                        appAccountLink
                     )
                 }
             } catch (e: Exception) {
