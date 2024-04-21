@@ -62,6 +62,39 @@ suspend fun ApplicationCall.closeUserSession() {
     supabase.auth.signOut()
 }
 
+fun isValidEmail(email: String): Boolean {
+    val emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
+    return email.matches(emailRegex.toRegex())
+}
+
+fun calculateDynamicServiceFee(totalPrice: Long): Long {
+    // Define the price range and corresponding fee range
+    val minPrice = 100
+    val maxPrice = 100000
+    val minFee = 29
+    val maxFee = 299
+
+    if (totalPrice < 100) {
+        return 5
+    } else if (totalPrice < 200) {
+        return 10
+    } else if (totalPrice < 300) {
+        return 15
+    } else if (totalPrice < 400) {
+        return 20
+    }
+    val price = totalPrice.toDouble()
+    // Calculate the fee based on a linear interpolation formula
+    return when {
+        price <= minPrice -> minFee.toLong()
+        price >= maxPrice -> maxFee.toLong()
+        else -> {
+            val fee = minFee + (maxFee - minFee) * ((price - minPrice) / (maxPrice - minPrice))
+            Math.round(fee).toLong()
+        }
+    }
+}
+
 fun addDaysToTimestampWithZone(timestamp: String?, daysToAdd: Long, zoneId: String): Instant {
     // Parse the timestamp string to a ZonedDateTime
     val initialDateTime = ZonedDateTime.ofInstant(Instant.parse(timestamp), ZoneId.of(zoneId))
@@ -88,7 +121,7 @@ fun createPaymentIntent(customerId: String, price: Long, paymentIntentPost: Paym
 
         val paymentIntentParams =
             PaymentIntentCreateParams.builder()
-                .setAmount(price)
+                .setAmount(price + calculateDynamicServiceFee(price))
                 .setCurrency("usd")
                 .setCustomer(customerId)
                 .setDescription("Purchased ${paymentIntentPost.quantity} shares of song ${paymentIntentPost.songName} by ${paymentIntentPost.artistName}")
@@ -135,7 +168,7 @@ fun createPaymentIntentForDonation(
 
         val paymentIntentParams =
             PaymentIntentCreateParams.builder()
-                .setAmount(price)
+                .setAmount(price + calculateDynamicServiceFee(price))
                 .setCurrency("usd")
                 .setCustomer(customerId)
                 .setDescription("Purchased song ${paymentIntentPost.songName} by ${paymentIntentPost.artistName} for $price")

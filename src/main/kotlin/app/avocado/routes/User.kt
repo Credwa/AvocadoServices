@@ -7,6 +7,7 @@ import app.avocado.services.Stripe
 import app.avocado.utils.BadRequestException
 import app.avocado.utils.PostSuccessResponse
 import app.avocado.utils.baseUrl
+import app.avocado.utils.isValidEmail
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.*
@@ -130,6 +131,34 @@ fun Route.userRouting() {
                 call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
             }
         }
+        post("paypal/{id?}") {
+            try {
+                val userId = call.parameters["id"] ?: return@post call.respondText(
+                    "Missing user id",
+                    status = HttpStatusCode.BadRequest
+                )
+                val data = call.receive<PaypalInfoPost>()
+                if (!isValidEmail(data.email)) {
+                    return@post call.respondText(
+                        "Invalid email format",
+                        status = HttpStatusCode.BadRequest
+                    )
+                }
+                supabase.from("users").update(
+                    {
+                        User::paypal setTo data.email
+                    }
+                ) {
+                    filter {
+                        User::id eq userId
+                    }
+                }
+                call.respond(PostSuccessResponse("paypal info updated successfully"))
+            } catch (e: Exception) {
+                println(e)
+                call.respond(HttpStatusCode.RequestTimeout, "Something went wrong")
+            }
+        }
     }
     route("$baseUrl/user/stripe") {
         get("account-details/{id?}") {
@@ -239,7 +268,8 @@ fun Route.userRouting() {
                                 null,
                                 isOnboarded = false,
                                 stripeOnboarded = false,
-                                expoPushToken = null
+                                expoPushToken = null,
+                                paypal = null
                             )
                         )
                     } else {
@@ -251,7 +281,8 @@ fun Route.userRouting() {
                                 null,
                                 isOnboarded = false,
                                 stripeOnboarded = false,
-                                expoPushToken = null
+                                expoPushToken = null,
+                                paypal = null
                             )
                         )
                     }

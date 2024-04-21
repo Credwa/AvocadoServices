@@ -15,12 +15,18 @@ data class User(
     @SerialName("notification_preferences") val notificationPreferences: NotificationPreferences?,
     @SerialName("is_onboarded") val isOnboarded: Boolean?,
     @SerialName("stripe_onboarding_complete") val stripeOnboarded: Boolean?,
-    @SerialName("expo_push_token") val expoPushToken: String?
+    @SerialName("expo_push_token") val expoPushToken: String?,
+    val paypal: String?
 )
 
 @Serializable
 data class NotificationTokenPost(
     val token: String
+)
+
+@Serializable
+data class PaypalInfoPost(
+    val email: String
 )
 
 @Serializable
