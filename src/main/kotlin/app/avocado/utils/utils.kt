@@ -116,7 +116,8 @@ fun createPaymentIntent(customerId: String, price: Long, paymentIntentPost: Paym
             "userId" to paymentIntentPost.uid,
             "songId" to paymentIntentPost.songId,
             "uid" to paymentIntentPost.uid,
-            "quantity" to paymentIntentPost.quantity.toString()
+            "quantity" to paymentIntentPost.quantity.toString(),
+            "service_fee" to calculateDynamicServiceFee(price).toString()
         )
 
         val paymentIntentParams =
@@ -163,7 +164,8 @@ fun createPaymentIntentForDonation(
             "userId" to paymentIntentPost.uid,
             "songId" to paymentIntentPost.songId,
             "uid" to paymentIntentPost.uid,
-            "quantity" to "0"
+            "quantity" to "0",
+            "service_fee" to calculateDynamicServiceFee(price).toString()
         )
 
         val paymentIntentParams =
