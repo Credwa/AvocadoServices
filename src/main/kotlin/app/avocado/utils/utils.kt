@@ -138,7 +138,6 @@ fun createPaymentIntent(customerId: String, price: Long, paymentIntentPost: Paym
             System.getenv("STRIPE_PUBLISHABLE_KEY")
         )
 
-        println("here 4 $paymentIntentResponse")
         return paymentIntentResponse
     } catch (e: Exception) {
         println(e)
@@ -179,7 +178,6 @@ fun createPaymentIntentForDonation(
                 .build()
         val paymentIntent = PaymentIntent.create(paymentIntentParams)
 
-        println("here")
         val paymentIntentResponse = PaymentIntentResponse(
             paymentIntent.clientSecret,
             ephemeralKey.secret,
@@ -187,7 +185,6 @@ fun createPaymentIntentForDonation(
             System.getenv("STRIPE_PUBLISHABLE_KEY")
         )
 
-        println("here 4 $paymentIntentResponse")
         return paymentIntentResponse
     } catch (e: Exception) {
         println(e)
